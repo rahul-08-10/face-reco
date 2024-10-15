@@ -70,7 +70,7 @@ function App() {
 
   return (
     <div className="myapp">
-      <h1>FAce Detection</h1>
+      <h1>Face Detection</h1>
       <div className="appvide">
 
         <video crossOrigin="anonymous" ref={videoRef} autoPlay></video>
