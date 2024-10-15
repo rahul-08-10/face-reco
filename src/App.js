@@ -1,85 +1,86 @@
-import { useRef, useEffect } from 'react'
-import './App.css'
-import * as faceapi from 'face-api.js'
+import { useRef, useEffect } from 'react';
+import './App.css';
+import * as faceapi from 'face-api.js';
 
 function App() {
-  const videoRef = useRef()
-  const canvasRef = useRef()
+  const videoRef = useRef();
+  const canvasRef = useRef();
 
   // LOAD FROM USEEFFECT
   useEffect(() => {
-    startVideo()
-    videoRef && loadModels()
-
-  }, [])
-
-
+    startVideo();
+    loadModels();
+  }, []);
 
   // OPEN YOU FACE WEBCAM
   const startVideo = () => {
     navigator.mediaDevices.getUserMedia({ video: true })
       .then((currentStream) => {
-        videoRef.current.srcObject = currentStream
+        videoRef.current.srcObject = currentStream;
       })
       .catch((err) => {
-        console.log(err)
-      })
-  }
-  // LOAD MODELS FROM FACE API
+        console.log(err);
+      });
+  };
 
+  // LOAD MODELS FROM FACE API
   const loadModels = () => {
     Promise.all([
-      // THIS FOR FACE DETECT AND LOAD FROM YOU PUBLIC/MODELS DIRECTORY
-      faceapi.nets.tinyFaceDetector.loadFromUri("/models"),
-      faceapi.nets.faceLandmark68Net.loadFromUri("/models"),
-      faceapi.nets.faceRecognitionNet.loadFromUri("/models"),
-      faceapi.nets.faceExpressionNet.loadFromUri("/models")
-
+      faceapi.nets.tinyFaceDetector.loadFromUri('/models'),
+      faceapi.nets.faceLandmark68Net.loadFromUri('/models'),
+      faceapi.nets.faceRecognitionNet.loadFromUri('/models'),
+      faceapi.nets.faceExpressionNet.loadFromUri('/models'),
     ]).then(() => {
-      faceMyDetect()
-    })
-  }
+      faceMyDetect();
+    });
+  };
 
   const faceMyDetect = () => {
     setInterval(async () => {
-      const detections = await faceapi.detectAllFaces(videoRef.current,
-        new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceExpressions();
+      const detections = await faceapi.detectAllFaces(
+        videoRef.current,
+        new faceapi.TinyFaceDetectorOptions()
+      )
+      .withFaceLandmarks()
+      .withFaceExpressions();
 
-      // console.log(faceapi.createCanvasFromMedia(videoRef.current));
-      // DRAW YOU FACE IN WEBCAM
-      canvasRef.current.innerHtml = faceapi.createCanvasFromMedia(videoRef.current)
-      faceapi.matchDimensions(canvasRef.current, {
-        width: 940,
-        height: 650
-      })
-      
-      // console.log(detections)
+      // Clear previous drawing
+      const canvas = canvasRef.current;
+      const displaySize = {
+        width: videoRef.current.clientWidth,
+        height: videoRef.current.clientHeight
+      };
 
-      const resized = faceapi.resizeResults(detections, {
-        width: 940,
-        height: 650
-      })
+      faceapi.matchDimensions(canvas, displaySize);
 
-      faceapi.draw.drawDetections(canvasRef.current, resized)
-      faceapi.draw.drawFaceLandmarks(canvasRef.current, resized)
-      faceapi.draw.drawFaceExpressions(canvasRef.current, resized)
+      // Resize the results
+      const resizedDetections = faceapi.resizeResults(detections, displaySize);
 
+      // Clear the canvas
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    }, 1000)
-  }
+      // Draw on canvas
+      faceapi.draw.drawDetections(canvas, resizedDetections);
+      faceapi.draw.drawFaceLandmarks(canvas, resizedDetections);
+      faceapi.draw.drawFaceExpressions(canvas, resizedDetections);
+    }, 1000);
+  };
 
   return (
     <div className="myapp">
       <h1>Face Detection</h1>
-      <div className="appvide">
-
-        <video crossOrigin="anonymous" ref={videoRef} autoPlay></video>
+      <div className="appvideo">
+        <video
+          crossOrigin="anonymous"
+          ref={videoRef}
+          autoPlay
+          className="responsive-video"
+        ></video>
+        <canvas ref={canvasRef} className="responsive-canvas"></canvas>
       </div>
-      <canvas ref={canvasRef} width="940" height="650"
-        className="appcanvas" />
     </div>
-  )
-
+  );
 }
 
 export default App;

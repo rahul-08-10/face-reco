@@ -1,18 +1,22 @@
-.appvide{
-  display: flex;
-  align-items: center;
+.myapp {
+  text-align: center;
 }
 
-.appcanvas{
+.appvideo {
+  position: relative;
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.responsive-video, .responsive-canvas {
+  width: 100%;
+  height: auto;
+}
+
+.responsive-canvas {
   position: absolute;
-  top: 100px
-}
-
-.myapp{
-  display: flex;
-  width: 100vw;
-  height: 100vh;
-  flex-direction: column;
-  align-items: center;
-  justify-content: space-between;
+  top: 0;
+  left: 0;
+  z-index: 1;
 }
